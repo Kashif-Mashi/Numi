@@ -4,7 +4,7 @@
 **NUMI** is a playful, interactive Android calculator designed to make everyday mathematics feel different. Combining expressive typography, interactive 3D number animations, tactile button interactions, and customizable themes, NUMI transforms a traditional calculator into a delightful visual experience.
 
 <div align="center">
-  <img src="assets/numi.png"
+  <img src="assets/numi.jfif"
        alt="NUMI - Math with a little motion"
        width="100%" />
 </div>
