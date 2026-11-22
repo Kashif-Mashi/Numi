@@ -14,20 +14,18 @@ import androidx.navigation.compose.rememberNavController
 import com.example.animations.NumiFeedbackManager
 import com.example.data.history.HistoryRepository
 import com.example.data.preferences.NumiPreferencesRepository
+import com.example.presentation.about.AboutScreen
 import com.example.presentation.calculator.CalculatorScreen
 import com.example.presentation.calculator.CalculatorViewModel
-import com.example.presentation.history.HistoryScreen
-import com.example.presentation.history.HistoryViewModel
-import com.example.presentation.settings.SettingsScreen
-import com.example.presentation.settings.SettingsViewModel
+import com.example.presentation.splash.SplashScreen
 import com.example.presentation.themes.ThemesScreen
 import com.example.presentation.themes.ThemesViewModel
 
 object NumiRoutes {
+    const val SPLASH = "splash"
     const val CALCULATOR = "calculator"
     const val THEMES = "themes"
-    const val HISTORY = "history"
-    const val SETTINGS = "settings"
+    const val ABOUT = "about"
 }
 
 @Composable
@@ -44,18 +42,18 @@ fun NumiNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = NumiRoutes.CALCULATOR,
+        startDestination = NumiRoutes.SPLASH,
         enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                animationSpec = tween(260)
-            ) + fadeIn(tween(220))
+                animationSpec = tween(240)
+            ) + fadeIn(tween(200))
         },
         exitTransition = {
             fadeOut(tween(180))
         },
         popEnterTransition = {
-            fadeIn(tween(220))
+            fadeIn(tween(200))
         },
         popExitTransition = {
             slideOutOfContainer(
@@ -64,6 +62,21 @@ fun NumiNavGraph(
             ) + fadeOut(tween(180))
         }
     ) {
+        composable(
+            route = NumiRoutes.SPLASH,
+            exitTransition = {
+                fadeOut(tween(280))
+            }
+        ) {
+            SplashScreen(
+                onSplashComplete = {
+                    navController.navigate(NumiRoutes.CALCULATOR) {
+                        popUpTo(NumiRoutes.SPLASH) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(NumiRoutes.CALCULATOR) {
             val uiState by calculatorViewModel.uiState.collectAsStateWithLifecycle()
             CalculatorScreen(
@@ -73,8 +86,7 @@ fun NumiNavGraph(
                 onToggleScientific = calculatorViewModel::toggleScientificMode,
                 onToggleAngleUnit = calculatorViewModel::toggleAngleUnit,
                 onOpenThemes = { navController.navigate(NumiRoutes.THEMES) },
-                onOpenHistory = { navController.navigate(NumiRoutes.HISTORY) },
-                onOpenSettings = { navController.navigate(NumiRoutes.SETTINGS) }
+                onOpenAbout = { navController.navigate(NumiRoutes.ABOUT) }
             )
         }
 
@@ -101,37 +113,8 @@ fun NumiNavGraph(
             )
         }
 
-        composable(NumiRoutes.HISTORY) {
-            val historyViewModel: HistoryViewModel = viewModel(
-                factory = HistoryViewModel.Factory(historyRepository)
-            )
-            val entries by historyViewModel.historyEntries.collectAsStateWithLifecycle()
-            HistoryScreen(
-                entries = entries,
-                onReuseResult = { result ->
-                    calculatorViewModel.reuseFromHistory(result)
-                    navController.popBackStack()
-                },
-                onDeleteEntry = historyViewModel::deleteEntry,
-                onClearAll = historyViewModel::clearAll,
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
-        composable(NumiRoutes.SETTINGS) {
-            val settingsViewModel: SettingsViewModel = viewModel(
-                factory = SettingsViewModel.Factory(preferencesRepository)
-            )
-            val prefs by settingsViewModel.preferences.collectAsStateWithLifecycle()
-            SettingsScreen(
-                preferences = prefs,
-                feedbackManager = feedbackManager,
-                onSetAnimationIntensity = settingsViewModel::setAnimationIntensity,
-                onSetHapticsEnabled = settingsViewModel::setHapticsEnabled,
-                onSetSoundEnabled = settingsViewModel::setSoundEnabled,
-                onSetAngleUnit = settingsViewModel::setAngleUnit,
-                onOpenThemes = { navController.navigate(NumiRoutes.THEMES) },
-                onResetPreferences = settingsViewModel::resetPreferences,
+        composable(NumiRoutes.ABOUT) {
+            AboutScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

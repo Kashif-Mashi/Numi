@@ -48,8 +48,7 @@ fun CalculatorScreen(
     onToggleScientific: () -> Unit,
     onToggleAngleUnit: () -> Unit,
     onOpenThemes: () -> Unit,
-    onOpenHistory: () -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenAbout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val theme = LocalNumiTheme.current
@@ -109,8 +108,7 @@ fun CalculatorScreen(
                             isScientificMode = uiState.isScientificExpanded,
                             onToggleScientific = onToggleScientific,
                             onOpenThemes = onOpenThemes,
-                            onOpenHistory = onOpenHistory,
-                            onOpenSettings = onOpenSettings
+                            onOpenAbout = onOpenAbout
                         )
 
                         Interactive3DNumberDisplay(
@@ -141,6 +139,7 @@ fun CalculatorScreen(
 
                     StandardKeypad(
                         rows = standardRows,
+                        isScientificMode = uiState.isScientificExpanded,
                         onPressDown = triggerPressDown,
                         onKeyClick = triggerKey,
                         modifier = Modifier
@@ -151,14 +150,13 @@ fun CalculatorScreen(
             } else {
                 Column(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(if (uiState.isScientificExpanded) 8.dp else 12.dp)
                 ) {
                     NumiTopBar(
                         isScientificMode = uiState.isScientificExpanded,
                         onToggleScientific = onToggleScientific,
                         onOpenThemes = onOpenThemes,
-                        onOpenHistory = onOpenHistory,
-                        onOpenSettings = onOpenSettings
+                        onOpenAbout = onOpenAbout
                     )
 
                     Interactive3DNumberDisplay(
@@ -173,7 +171,7 @@ fun CalculatorScreen(
                         onToggleAngleUnit = onToggleAngleUnit,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(if (uiState.isScientificExpanded) 0.30f else 0.38f)
+                            .weight(if (uiState.isScientificExpanded) 0.32f else 0.38f)
                     )
 
                     AnimatedVisibility(
@@ -190,11 +188,12 @@ fun CalculatorScreen(
 
                     StandardKeypad(
                         rows = standardRows,
+                        isScientificMode = uiState.isScientificExpanded,
                         onPressDown = triggerPressDown,
                         onKeyClick = triggerKey,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(if (uiState.isScientificExpanded) 0.50f else 0.62f)
+                            .weight(if (uiState.isScientificExpanded) 0.48f else 0.62f)
                     )
 
                     Spacer(modifier = Modifier.height(2.dp))
@@ -207,20 +206,22 @@ fun CalculatorScreen(
 @Composable
 private fun StandardKeypad(
     rows: List<List<CalculatorKey>>,
+    isScientificMode: Boolean,
     onPressDown: () -> Unit,
     onKeyClick: (CalcAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val spacing = if (isScientificMode) 8.dp else 12.dp
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         rows.forEach { row ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(spacing)
             ) {
                 row.forEach { key ->
                     TactileCalcButton(
@@ -246,22 +247,22 @@ private fun ScientificKeypad(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         rows.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 row.forEach { key ->
                     TactileCalcButton(
                         key = key,
                         onPressDown = onPressDown,
                         onClick = { onKeyClick(key.action) },
-                        fontSizeOverride = 15.sp,
+                        fontSizeOverride = 13.sp,
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp)
+                            .height(38.dp)
                     )
                 }
             }

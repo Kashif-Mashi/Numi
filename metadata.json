@@ -1,6 +1,6 @@
 {
   "name": "NUMI",
-  "description": "A playful, interactive 3D Android calculator. Math with a little motion.",
+  "description": "A clean and simple scientific calculator with refined color themes.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

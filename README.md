@@ -8,7 +8,6 @@
        alt="NUMI - Math with a little motion"
        width="100%" />
 </div>
----
 
 ## 🌟 About NUMI
 

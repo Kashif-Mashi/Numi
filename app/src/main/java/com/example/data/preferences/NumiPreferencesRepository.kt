@@ -78,7 +78,7 @@ class NumiPreferencesRepository(private val dataStore: DataStore<Preferences>) {
                 themeId = themeId,
                 animationIntensity = intensity,
                 hapticsEnabled = prefs[Keys.HAPTICS_ENABLED] ?: true,
-                soundEnabled = prefs[Keys.SOUND_ENABLED] ?: false,
+                soundEnabled = prefs[Keys.SOUND_ENABLED] ?: true,
                 angleUnit = angleUnit,
                 customAccentHex = prefs[Keys.CUSTOM_ACCENT_HEX] ?: 0xFF6366F1,
                 customIsDark = prefs[Keys.CUSTOM_IS_DARK] ?: false,

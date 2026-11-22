@@ -34,14 +34,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ViewInAr
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -78,9 +73,7 @@ import com.example.animations.NumiMotion
 import com.example.domain.calculator.ExpressionFormatter
 import com.example.domain.models.AngleUnit
 import com.example.domain.models.AnimationIntensity
-import com.example.domain.models.TextShadowStyle
 import com.example.ui.theme.LocalAnimationIntensity
-import com.example.ui.theme.LocalNumiTextCustomization
 import com.example.ui.theme.LocalNumiTheme
 import com.example.ui.typography.NumiFonts
 import kotlinx.coroutines.launch
@@ -102,7 +95,6 @@ fun Interactive3DNumberDisplay(
 ) {
     val theme = LocalNumiTheme.current
     val intensity = LocalAnimationIntensity.current
-    val textCustom = LocalNumiTextCustomization.current
     val density = LocalDensity.current.density
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
@@ -116,21 +108,19 @@ fun Interactive3DNumberDisplay(
     var isDragging by remember { mutableStateOf(false) }
     var lastTapTimeMs by remember { mutableLongStateOf(0L) }
 
-    // Input pulse hop when buttons are pressed
     LaunchedEffect(pulseTrigger) {
         if (pulseTrigger > 0) {
             val boost = when {
-                justEvaluated -> 1.095f
+                justEvaluated -> 1.06f
                 intensity == AnimationIntensity.SUBTLE -> 1.02f
-                intensity == AnimationIntensity.PLAYFUL -> 1.055f
-                else -> 1.085f
+                intensity == AnimationIntensity.PLAYFUL -> 1.04f
+                else -> 1.06f
             }
             popScale.snapTo(boost)
             popScale.animateTo(1f, NumiMotion.numberPopSpring(intensity))
         }
     }
 
-    // Subtle idle floating wobble when user isn't dragging
     val infiniteTransition = rememberInfiniteTransition(label = "idleFloat")
     val idleWave by infiniteTransition.animateFloat(
         initialValue = -1f,
@@ -142,8 +132,8 @@ fun Interactive3DNumberDisplay(
         label = "idleWave"
     )
     val idleTiltY by infiniteTransition.animateFloat(
-        initialValue = -1.6f,
-        targetValue = 1.6f,
+        initialValue = -1.2f,
+        targetValue = 1.2f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 4100, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -174,15 +164,24 @@ fun Interactive3DNumberDisplay(
         numberScroll.scrollTo(numberScroll.maxValue)
     }
 
-    val dynamicFontSize = remember(formattedPrimary.length, isError, textCustom.numberScaleFactor) {
+    // Dynamic responsive font size: scales smaller in scientific mode so it is always 100% visible
+    val dynamicFontSize = remember(formattedPrimary.length, isError, isScientificMode) {
         val base = when {
-            isError -> 28f
-            formattedPrimary.length <= 7 -> 62f
-            formattedPrimary.length <= 10 -> 50f
-            formattedPrimary.length <= 13 -> 40f
-            else -> 32f
+            isError -> 24f
+            isScientificMode -> when {
+                formattedPrimary.length <= 6 -> 38f
+                formattedPrimary.length <= 9 -> 32f
+                formattedPrimary.length <= 12 -> 26f
+                else -> 20f
+            }
+            else -> when {
+                formattedPrimary.length <= 6 -> 54f
+                formattedPrimary.length <= 9 -> 44f
+                formattedPrimary.length <= 12 -> 34f
+                else -> 26f
+            }
         }
-        (base * textCustom.numberScaleFactor).sp
+        base.sp
     }
 
     val displayShape = RoundedCornerShape(theme.displayCornerRadius)
@@ -197,7 +196,7 @@ fun Interactive3DNumberDisplay(
         modifier = modifier
             .fillMaxWidth()
             .shadow(
-                elevation = if (theme.isDark) 18.dp else 12.dp,
+                elevation = if (theme.isDark) 14.dp else 8.dp,
                 shape = displayShape,
                 ambientColor = theme.shadowColor,
                 spotColor = theme.shadowColor
@@ -205,13 +204,12 @@ fun Interactive3DNumberDisplay(
             .clip(displayShape)
             .background(surfaceBrush)
             .drawBehind {
-                // Dynamic specular sheen that follows 3D tilt angle
                 val sheenX = size.width * (0.5f + (rotY.value / 84f))
                 val sheenY = size.height * (0.35f - (rotX.value / 70f))
                 drawCircle(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            theme.accentColor.copy(alpha = if (isDragging) 0.14f else 0.05f),
+                            theme.accentColor.copy(alpha = if (isDragging) 0.12f else 0.04f),
                             theme.displaySurface.copy(alpha = 0f)
                         ),
                         center = Offset(sheenX, sheenY),
@@ -222,8 +220,8 @@ fun Interactive3DNumberDisplay(
                 )
             }
             .border(
-                width = 1.5.dp,
-                color = if (isDragging) theme.accentColor.copy(alpha = 0.75f) else theme.displayBorder,
+                width = 1.dp,
+                color = if (isDragging) theme.accentColor.copy(alpha = 0.6f) else theme.displayBorder,
                 shape = displayShape
             )
             .testTag("calculator_display_3d")
@@ -244,15 +242,15 @@ fun Interactive3DNumberDisplay(
                             if (pan != Offset.Zero || zoom != 1f || rotation != 0f) {
                                 event.changes.forEach { it.consume() }
                                 scope.launch {
-                                    val sensitivity = 0.32f
-                                    val nextY = (rotY.value + pan.x * sensitivity).coerceIn(-44f, 44f)
-                                    val nextX = (rotX.value - pan.y * sensitivity).coerceIn(-36f, 36f)
+                                    val sensitivity = 0.28f
+                                    val nextY = (rotY.value + pan.x * sensitivity).coerceIn(-36f, 36f)
+                                    val nextX = (rotX.value - pan.y * sensitivity).coerceIn(-28f, 28f)
                                     rotY.snapTo(nextY)
                                     rotX.snapTo(nextX)
 
                                     if (pressedCount >= 2) {
-                                        val nextScale = (pinchScale.value * zoom).coerceIn(0.84f, 1.35f)
-                                        val nextZ = (rotZ.value + rotation).coerceIn(-18f, 18f)
+                                        val nextScale = (pinchScale.value * zoom).coerceIn(0.88f, 1.25f)
+                                        val nextZ = (rotZ.value + rotation).coerceIn(-14f, 14f)
                                         pinchScale.snapTo(nextScale)
                                         rotZ.snapTo(nextZ)
                                     }
@@ -263,7 +261,6 @@ fun Interactive3DNumberDisplay(
 
                     isDragging = false
 
-                    // Quick double-tap triggers a playful 360-degree 3D spin!
                     if (totalMovement < 14f) {
                         val now = System.currentTimeMillis()
                         if (now - lastTapTimeMs < 320L) {
@@ -274,7 +271,7 @@ fun Interactive3DNumberDisplay(
                                 spinY.animateTo(
                                     targetValue = 360f,
                                     animationSpec = spring(
-                                        dampingRatio = 0.58f,
+                                        dampingRatio = 0.62f,
                                         stiffness = 220f
                                     )
                                 )
@@ -292,43 +289,23 @@ fun Interactive3DNumberDisplay(
                     scope.launch { pinchScale.animateTo(1f, releaseSpec) }
                 }
             }
-            .padding(horizontal = 20.dp, vertical = 16.dp)
+            .padding(
+                horizontal = 18.dp,
+                vertical = if (isScientificMode) 10.dp else 14.dp
+            )
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top metadata row: live 3D angle badge + angle mode chip
+            // Top row: only shows clean DEG/RAD angle unit toggle on top-right (no angle or drag tags!)
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(if (isScientificMode || angleUnit == AngleUnit.RAD) 26.dp else 4.dp),
+                horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(theme.accentColor.copy(alpha = if (isDragging) 0.20f else 0.10f))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.ViewInAr,
-                        contentDescription = null,
-                        tint = theme.accentColor,
-                        modifier = Modifier.size(14.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = if (isDragging) {
-                            "3D ${rotX.value.roundToInt()}° / ${rotY.value.roundToInt()}°"
-                        } else {
-                            "Drag 3D • 2×Tap Spin"
-                        },
-                        style = MaterialTheme.typography.labelMedium,
-                        color = theme.accentColor
-                    )
-                }
-
                 AnimatedVisibility(
                     visible = isScientificMode || angleUnit == AngleUnit.RAD,
                     enter = fadeIn() + scaleIn(),
@@ -339,25 +316,25 @@ fun Interactive3DNumberDisplay(
                             .clip(CircleShape)
                             .background(theme.utilityKeyBg)
                             .clickable(onClick = onToggleAngleUnit)
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                            .padding(horizontal = 10.dp, vertical = 3.dp)
                             .testTag("display_angle_chip")
                     ) {
                         Text(
                             text = angleUnit.name,
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = theme.utilityKeyText
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             // Expression tape row
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(28.dp),
+                    .height(if (isScientificMode) 22.dp else 26.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Row(
@@ -366,8 +343,8 @@ fun Interactive3DNumberDisplay(
                 ) {
                     Text(
                         text = formattedExpression,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 20.sp,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontSize = if (isScientificMode) 16.sp else 19.sp,
                             fontFamily = NumiFonts.displayFamily(theme.fontStyle)
                         ),
                         color = theme.secondaryText,
@@ -378,20 +355,19 @@ fun Interactive3DNumberDisplay(
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
-            // Signature Interactive 3D Extruded Number
-            val activeRotX = rotX.value + (idleWave * 1.4f * idleWeight)
-            val activeRotY = rotY.value + spinY.value + (idleTiltY * 1.5f * idleWeight)
+            // Number display with 3D tilt
+            val activeRotX = rotX.value + (idleWave * 1.0f * idleWeight)
+            val activeRotY = rotY.value + spinY.value + (idleTiltY * 1.1f * idleWeight)
             val activeRotZ = rotZ.value
             val activeScale = pinchScale.value * popScale.value
-            val floatOffsetY = idleWave * 2.5f * density * idleWeight
+            val floatOffsetY = idleWave * 1.5f * density * idleWeight
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f, fill = false)
-                    .padding(vertical = 4.dp)
                     .graphicsLayer {
                         cameraDistance = 12f * density
                         rotationX = activeRotX
@@ -410,45 +386,37 @@ fun Interactive3DNumberDisplay(
                     AnimatedContent(
                         targetState = formattedPrimary,
                         transitionSpec = {
-                            (fadeIn(tween(130)) + scaleIn(initialScale = 0.92f)) togetherWith
-                                (fadeOut(tween(90)) + scaleOut(targetScale = 1.04f))
+                            (fadeIn(tween(130)) + scaleIn(initialScale = 0.95f)) togetherWith
+                                (fadeOut(tween(90)) + scaleOut(targetScale = 1.03f))
                         },
                         label = "primaryNumberAnim"
                     ) { numberText ->
                         val textStyle = MaterialTheme.typography.displayLarge.copy(
                             fontSize = dynamicFontSize,
-                            lineHeight = dynamicFontSize * 1.12f,
+                            lineHeight = dynamicFontSize * 1.15f,
                             fontFamily = NumiFonts.displayFamily(theme.fontStyle),
                             fontWeight = FontWeight.Bold
                         )
 
-                        val depthLayers = textCustom.depthStyle.layers
-                        val depthScale = textCustom.depthStyle.offsetScale
-
                         Box(contentAlignment = Alignment.CenterEnd) {
-                            // Cast floor shadow reacting to 3D tilt & customizable shadow style
-                            val floorShadowAlpha = when (textCustom.shadowStyle) {
-                                TextShadowStyle.SOFT -> 0.85f
-                                TextShadowStyle.CRISP -> 1.0f
-                                TextShadowStyle.GLOW -> 0.55f
-                            }
+                            // Floor shadow
                             Text(
                                 text = numberText,
                                 style = textStyle,
-                                color = theme.shadowColor.copy(alpha = theme.shadowColor.alpha * floorShadowAlpha),
+                                color = theme.shadowColor.copy(alpha = 0.35f),
                                 maxLines = 1,
                                 modifier = Modifier.offset {
                                     IntOffset(
-                                        x = (-rotY.value * 0.48f * depthScale * density).roundToInt(),
-                                        y = (rotX.value * 0.48f * depthScale * density + 7f * depthScale * density).roundToInt()
+                                        x = (-rotY.value * 0.3f * density).roundToInt(),
+                                        y = (rotX.value * 0.3f * density + 4f * density).roundToInt()
                                     )
                                 }
                             )
 
-                            // Extruded 3D thickness slices driven by user's TextDepthStyle
-                            for (slice in depthLayers downTo 1) {
-                                val t = slice.toFloat() / (depthLayers + 1f)
-                                val sliceColor = lerp(theme.extrusionColor, theme.shadowColor, t * 0.55f)
+                            // Extruded 3D slices (clean & subtle)
+                            for (slice in 3 downTo 1) {
+                                val t = slice.toFloat() / 4f
+                                val sliceColor = lerp(theme.extrusionColor, theme.shadowColor, t * 0.45f)
                                 Text(
                                     text = numberText,
                                     style = textStyle,
@@ -456,40 +424,23 @@ fun Interactive3DNumberDisplay(
                                     maxLines = 1,
                                     modifier = Modifier.offset {
                                         IntOffset(
-                                            x = (-rotY.value * 0.14f * slice * depthScale * density).roundToInt(),
-                                            y = ((rotX.value * 0.14f + 1.05f) * slice * depthScale * density).roundToInt()
+                                            x = (-rotY.value * 0.12f * slice * density).roundToInt(),
+                                            y = ((rotX.value * 0.12f + 0.8f) * slice * density).roundToInt()
                                         )
                                     }
                                 )
                             }
 
-                            // Front illuminated face with customizable TextShadowStyle
-                            val faceColor = when {
-                                isError -> theme.secondaryAccentColor
-                                justEvaluated && theme.neonGlowColor != null -> theme.neonGlowColor
-                                else -> theme.primaryText
-                            }
-                            val customShadow = when (textCustom.shadowStyle) {
-                                TextShadowStyle.SOFT -> Shadow(
-                                    color = (theme.neonGlowColor ?: theme.shadowColor).copy(alpha = 0.35f),
-                                    offset = Offset(0f, 3f * density),
-                                    blurRadius = 10f
-                                )
-                                TextShadowStyle.CRISP -> Shadow(
-                                    color = theme.extrusionColor.copy(alpha = 0.85f),
-                                    offset = Offset(1.5f * density, 2.5f * density),
-                                    blurRadius = 0.5f
-                                )
-                                TextShadowStyle.GLOW -> Shadow(
-                                    color = (theme.neonGlowColor ?: theme.accentColor).copy(alpha = 0.65f),
-                                    offset = Offset.Zero,
-                                    blurRadius = 24f
-                                )
-                            }
+                            val faceColor = if (isError) theme.secondaryAccentColor else theme.primaryText
+                            val cleanShadow = Shadow(
+                                color = theme.shadowColor.copy(alpha = 0.25f),
+                                offset = Offset(0f, 2f * density),
+                                blurRadius = 6f
+                            )
 
                             Text(
                                 text = numberText,
-                                style = textStyle.copy(shadow = customShadow),
+                                style = textStyle.copy(shadow = cleanShadow),
                                 color = faceColor,
                                 maxLines = 1,
                                 modifier = Modifier
@@ -503,23 +454,18 @@ fun Interactive3DNumberDisplay(
                 }
             }
 
-            // Live preview chip
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(24.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = !livePreview.isNullOrBlank() && !justEvaluated && !isError,
-                    enter = fadeIn() + scaleIn(initialScale = 0.9f),
-                    exit = fadeOut() + scaleOut(targetScale = 0.9f)
+            // Live preview row
+            if (livePreview != null && !isError) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    val previewFormatted = livePreview?.let { ExpressionFormatter.formatForDisplay(it) } ?: ""
                     Text(
-                        text = "= $previewFormatted",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = NumiFonts.displayFamily(theme.fontStyle)
+                        text = "= $livePreview",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
                         ),
                         color = theme.accentColor,
                         maxLines = 1,

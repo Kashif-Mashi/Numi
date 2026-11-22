@@ -1,12 +1,14 @@
 <resources>
     <string name="app_name">NUMI</string>
-    <string name="app_tagline">Math with a little motion.</string>
+    <string name="app_tagline">Scientific Calculator</string>
     <string name="nav_calculator">Calculator</string>
     <string name="nav_themes">Themes</string>
+    <string name="nav_about">About</string>
     <string name="nav_history">History</string>
     <string name="nav_settings">Settings</string>
-    <string name="cd_open_themes">Open Theme Gallery</string>
-    <string name="cd_open_history">Open Calculation History</string>
+    <string name="cd_open_themes">Open Themes</string>
+    <string name="cd_open_about">Open About</string>
+    <string name="cd_open_history">Open History</string>
     <string name="cd_open_settings">Open Settings</string>
     <string name="cd_toggle_scientific">Toggle Scientific Mode</string>
     <string name="cd_navigate_back">Navigate back</string>
@@ -14,16 +16,17 @@
     <string name="cd_clear">Clear</string>
     <string name="cd_equals">Equals</string>
     <string name="cd_sign_toggle">Toggle positive or negative sign</string>
-    <string name="cd_delete_history_item">Delete calculation</string>
-    <string name="cd_clear_history">Clear all history</string>
+    <string name="cd_delete_history_item">Delete item</string>
+    <string name="cd_clear_history">Clear history</string>
+    <string name="history_empty_title">No calculations</string>
+    <string name="history_empty_subtitle">Solved calculations appear here</string>
+    <string name="history_tap_to_reuse">Tap to reuse</string>
     <string name="drag_hint">Drag number to tilt in 3D</string>
-    <string name="history_empty_title">No calculations yet</string>
-    <string name="history_empty_subtitle">Your solved equations will appear here so you can tap and reuse them anytime.</string>
-    <string name="history_tap_to_reuse">Tap any card to reuse its result</string>
-    <string name="themes_title">Theme Studio</string>
-    <string name="themes_subtitle">Preview any palette in 3D before applying</string>
+    <string name="themes_title">Color Themes</string>
+    <string name="themes_subtitle">Select your preferred calculator color palette</string>
     <string name="themes_apply">Apply Theme</string>
-    <string name="themes_active">Active Theme</string>
+    <string name="themes_active">Active</string>
     <string name="settings_title">Settings</string>
-    <string name="about_description">NUMI blends crisp mathematical precision with tactile, physics-inspired 3D typography and responsive motion.</string>
+    <string name="about_title">About NUMI</string>
+    <string name="about_description">NUMI is a clean and simple scientific calculator with refined color themes.</string>
 </resources>

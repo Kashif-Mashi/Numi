@@ -41,6 +41,9 @@ class NumiFeedbackManager {
         hapticFeedback: HapticFeedback?,
         hapticsEnabled: Boolean
     ) {
+        runCatching {
+            view?.playSoundEffect(android.view.SoundEffectConstants.CLICK)
+        }
         if (!hapticsEnabled) return
         runCatching {
             if (view != null) {
@@ -61,6 +64,9 @@ class NumiFeedbackManager {
         type: SoundEffectType,
         hapticFeedback: HapticFeedback? = null
     ) {
+        runCatching {
+            view?.playSoundEffect(android.view.SoundEffectConstants.CLICK)
+        }
         if (hapticsEnabled) {
             runCatching {
                 if (view != null) {

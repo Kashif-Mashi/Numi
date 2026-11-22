@@ -32,23 +32,23 @@ enum class TextShadowStyle(val label: String) {
 }
 
 enum class ThemeId(val storageKey: String, val displayName: String, val tagline: String) {
-    CREAM_CLASSIC("cream_classic", "Cream Classic", "Warm paper & terracotta"),
-    MIDNIGHT("midnight", "Midnight", "Obsidian matte & amber"),
-    CITRUS_POP("citrus_pop", "Citrus Pop", "Sunlit tangerine & lemon"),
-    CYBER_NEON("cyber_neon", "Cyber Neon", "Electric cyan & matrix glow"),
-    PASTEL_DREAM("pastel_dream", "Pastel Dream", "Cloud lavender & mint"),
-    OCEAN_BLUE("ocean_blue", "Ocean Blue", "Deep abyss & seafoam"),
-    CUSTOM("custom", "Custom Studio", "Your signature accent")
+    MIDNIGHT("midnight", "Midnight Dark", "Obsidian & warm amber"),
+    CYBER_NEON("cyber_neon", "Clean Light", "Crisp minimalist white"),
+    CITRUS_POP("citrus_pop", "Slate Charcoal", "Modern charcoal & azure"),
+    OCEAN_BLUE("ocean_blue", "Ocean Blue", "Deep navy & sky blue"),
+    PASTEL_DREAM("pastel_dream", "Forest Emerald", "Deep emerald & sage"),
+    CREAM_CLASSIC("cream_classic", "Classic Cream", "Warm paper & terracotta"),
+    CUSTOM("custom", "Custom Accent", "Your chosen color accent")
 }
 
 data class UserPreferences(
-    val themeId: ThemeId = ThemeId.CREAM_CLASSIC,
+    val themeId: ThemeId = ThemeId.MIDNIGHT,
     val animationIntensity: AnimationIntensity = AnimationIntensity.PLAYFUL,
     val hapticsEnabled: Boolean = true,
-    val soundEnabled: Boolean = false,
+    val soundEnabled: Boolean = true,
     val angleUnit: AngleUnit = AngleUnit.DEG,
-    val customAccentHex: Long = 0xFF6366F1,
-    val customIsDark: Boolean = false,
+    val customAccentHex: Long = 0xFF00E5FF,
+    val customIsDark: Boolean = true,
     val textFontOverride: TextFontOverride = TextFontOverride.THEME_DEFAULT,
     val textDepthStyle: TextDepthStyle = TextDepthStyle.MEDIUM,
     val textShadowStyle: TextShadowStyle = TextShadowStyle.SOFT,
