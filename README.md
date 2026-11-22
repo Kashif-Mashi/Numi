@@ -181,8 +181,3 @@ This project is intended to be open source. Licensing terms will be specified in
 
 ---
 
-<p align="center">
-  Made with ❤️ and Kotlin.
-  <br/>
-  <strong>NUMI — Math with a little motion.</strong>
-</p>
